@@ -3,6 +3,8 @@ import { Route, Routes } from 'react-router-dom'
 import { SettingsProvider } from '@/context/SettingsContext'
 import { AdminProvider } from '@/admin/AdminContext'
 import { PublicLayout } from '@/layouts/PublicLayout'
+import ScrollToTop from '@/components/ScrollToTop'
+import { Preloader } from '@/components/Preloader'
 
 const Home = lazy(() => import('@/pages/Home'))
 const About = lazy(() => import('@/pages/About'))
@@ -34,11 +36,17 @@ const M = {
   Banners: lazy(() => import('@/admin/Modules').then((m) => ({ default: m.BannersAdmin }))),
 }
 
-const Fallback = <div className="grid min-h-[50vh] place-items-center text-sm text-muted" role="status">Loading…</div>
+const Fallback = (
+  <div className="grid min-h-[60vh] place-items-center" role="status" aria-label="Loading">
+    <span className="h-12 w-12 animate-spin rounded-full border-[3px] border-gold/20 border-t-gold" />
+  </div>
+)
 
 export default function App() {
   return (
     <Suspense fallback={Fallback}>
+      <ScrollToTop />
+      <Preloader />
       <Routes>
         <Route path="/admin/login" element={<AdminProvider><Login /></AdminProvider>} />
         <Route path="/admin" element={<AdminProvider><AdminLayout /></AdminProvider>}>

@@ -139,6 +139,8 @@ export interface Settings {
     image?: string
   }
   hero_stats: { icon: string; value: string; label: string }[]
+    contact_person?: { name: string; role: string }
+  business_type?: string
 }
 
 export interface Paginated<T> {

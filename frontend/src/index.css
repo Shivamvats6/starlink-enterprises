@@ -4,10 +4,10 @@
 
 @layer base {
   html { scroll-behavior: smooth; scroll-padding-top: 88px; }
-  body { @apply bg-white font-sans text-body antialiased; padding-bottom: env(safe-area-inset-bottom); }
+  body { @apply bg-white font-sans text-body antialiased; padding-bottom: env(safe-area-inset-bottom); overflow-x: clip; }
   h1, h2, h3, h4 { @apply font-heading text-navy; }
   @media (prefers-reduced-motion: reduce) {
-    html { scroll-behavior: auto; }
+    html { scroll-behavior: auto; overflow-x: clip; }
     *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
   }
 }
@@ -36,5 +36,25 @@
 /* Hero copy stays inside the light (left) part of the banner on desktop: width = 44vw minus the container's left offset */
 @media (min-width: 1024px) {
   .hero-copy { width: calc(44vw - max(2rem, (100vw - 1240px) / 2 + 2rem)); min-width: 380px; }
-  
 }
+
+/* ───────────── Project flip-book (react-pageflip) ───────────── */
+.project-flipbook { margin: 0 auto; }
+.stf__parent { margin: 0 auto; }
+
+/* paper look for the content pages */
+.pf-paper {
+  background-color: #FCFAF6;
+  background-image: radial-gradient(rgba(197, 147, 61, .08) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* gold-foil text + a slow light sweep across the covers */
+@keyframes pf-foil { to { background-position: 200% center; } }
+.pf-foil { background-size: 200% auto; animation: pf-foil 7s linear infinite; }
+@keyframes pf-sheen {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  55%, 100% { transform: translateX(520%) skewX(-18deg); }
+}
+.pf-sheen { animation: pf-sheen 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .pf-foil, .pf-sheen { animation: none !important; } }

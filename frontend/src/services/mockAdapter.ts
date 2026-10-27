@@ -16,7 +16,7 @@ type Db = {
   testimonials: Row[]; media: Row[]; team: Row[]; pages: Row[]; settings: any; activity: { at: string; text: string }[]
 }
 
-const KEY = 'starlink_mock_db_v2'
+const KEY = 'starlink_mock_db_v3'
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
 
 function fresh(): Db {
