@@ -9,12 +9,14 @@ import { Icon } from '@/utils/icons'
  * - Scroll progress picks the active service -> text + image change together, live.
  * - Desktop: direction-aware snapping with a custom eased animation (one scroll = next service,
  *   content settles in the center by itself). User input (wheel / touch / keys) instantly takes over.
- * - Mobile: same pinned stage (image on top, text below) with free, natural scrolling.
+ * - Mobile: same pinned stage. Image fills ALL the free height (so there is never empty space),
+ *   text sits in a compact block under it, free natural scrolling.
  */
 
 type AnyService = Record<string, any>
 
 const NAV_OFFSET = 88 // navbar height (matches scroll-padding-top in index.css)
+const MOBILE_BOTTOM_NAV = 84 // fixed bottom app-bar on mobile (px) — stage is shortened by this
 const STEP_SVH = 55 // scroll length (in svh) per service — lower = faster
 
 const clamp = (n: number, a: number, b: number) => Math.min(b, Math.max(a, n))
@@ -142,11 +144,14 @@ export function ServicesShowcase({ services, loading }: { services: AnyService[]
 
   if (!loading && n === 0) return null
 
+  // CSS vars so wrapper + stage heights stay in sync on mobile (minus bottom bar) and desktop
+  const vars = { '--nav': `${NAV_OFFSET}px`, '--extra': `${(n - 1) * STEP_SVH}svh` } as React.CSSProperties
+
   return (
-    <section className="bg-white pb-16 pt-20 lg:pb-24 lg:pt-28">
+    <section className="bg-white pb-12 pt-16 lg:pb-24 lg:pt-28">
       {/* ───────── HEADER ───────── */}
       <div className="container-x">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-10">
           <div className="max-w-2xl">
             <SectionHeading eyebrow="Our Services" title="Complete Solutions Under One Roof" />
           </div>
@@ -157,25 +162,26 @@ export function ServicesShowcase({ services, loading }: { services: AnyService[]
       </div>
 
       {loading ? (
-        <div className="container-x mt-12 grid gap-8 lg:grid-cols-2">
+        <div className="container-x mt-10 grid gap-8 lg:grid-cols-2">
           <Skeleton className="h-64 lg:h-[520px]" />
           <Skeleton className="hidden h-[520px] lg:block" />
         </div>
       ) : (
         <div
           ref={wrapRef}
-          className="container-x mt-10 lg:mt-14"
-          style={{ height: `calc(100svh - ${NAV_OFFSET}px + ${(n - 1) * STEP_SVH}svh)` }}
+          className={`container-x mt-8 h-[calc(100svh_-_var(--nav)_-_84px_+_var(--extra))] lg:mt-14 lg:h-[calc(100svh_-_var(--nav)_+_var(--extra))]`}
+          style={vars}
         >
           <div
             ref={stageRef}
-            className="sticky flex flex-col gap-5 py-3 lg:grid lg:grid-cols-12 lg:items-center lg:gap-16 lg:py-0"
-            style={{ top: NAV_OFFSET, height: `calc(100svh - ${NAV_OFFSET}px)` }}
+            className={`sticky flex flex-col gap-4 py-2 h-[calc(100svh_-_var(--nav)_-_84px)] lg:grid lg:h-[calc(100svh_-_var(--nav))] lg:grid-cols-12 lg:items-center lg:gap-16 lg:py-0`}
+            style={{ top: NAV_OFFSET }}
           >
             {/* ───────── IMAGE STAGE ───────── */}
-            <div className="relative order-1 h-[36svh] min-h-[190px] shrink-0 lg:order-2 lg:col-span-6 lg:h-[min(88%,620px)]">
+            {/* mobile: flex-1 => image takes ALL remaining height (no empty gap). desktop: fixed ratio box */}
+            <div className="relative order-1 min-h-[200px] flex-1 lg:order-2 lg:col-span-6 lg:h-[min(88%,620px)] lg:flex-none">
               <div aria-hidden="true" className="absolute -left-5 -top-5 hidden h-full w-full rounded-card border border-gold/40 lg:block" />
-              <div className="relative h-full w-full overflow-hidden rounded-card bg-navy shadow-2xl">
+              <div className="relative h-full w-full overflow-hidden rounded-[26px] bg-navy shadow-[0_24px_50px_-20px_rgba(11,31,59,.55)] ring-1 ring-gold/25 lg:rounded-card lg:shadow-2xl lg:ring-0">
                 {list.map((sv, i) => {
                   const image = pick(sv, ['image', 'cover_image', 'thumbnail'])
                   const title = pick(sv, ['title', 'name'])
@@ -200,7 +206,7 @@ export function ServicesShowcase({ services, loading }: { services: AnyService[]
                   )
                 })}
 
-                <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[20] bg-gradient-to-t from-navy-deep/85 via-navy-deep/10 to-transparent" />
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[20] bg-gradient-to-t from-navy-deep/90 via-navy-deep/10 to-transparent" />
                 <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 z-[20] h-px bg-gradient-to-r from-transparent via-gold-light/70 to-transparent" />
 
                 {/* glass icon chip */}
@@ -228,12 +234,13 @@ export function ServicesShowcase({ services, loading }: { services: AnyService[]
             </div>
 
             {/* ───────── TEXT STAGE ───────── */}
-            <div className="relative order-2 flex min-h-0 flex-1 flex-col justify-between lg:order-1 lg:col-span-6 lg:flex-none lg:justify-center lg:gap-14">
-              {/* giant outlined number — sits quietly at the top-right of the text column */}
+            {/* mobile: natural height (shrink-0) so the image above gets the rest of the screen */}
+            <div className="relative order-2 flex shrink-0 flex-col gap-4 lg:order-1 lg:col-span-6 lg:justify-center lg:gap-14">
+              {/* giant outlined number */}
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute -top-4 right-0 select-none font-heading text-[7rem] font-extrabold leading-none text-transparent transition-opacity duration-700 sm:text-[10rem] lg:-top-28 lg:text-[14rem]"
-                style={{ WebkitTextStroke: '1px rgba(197,147,61,.2)' }}
+                className="pointer-events-none absolute -top-2 right-0 select-none font-heading text-[5.5rem] font-extrabold leading-none text-transparent transition-opacity duration-700 sm:text-[9rem] lg:-top-28 lg:text-[14rem]"
+                style={{ WebkitTextStroke: '1px rgba(197,147,61,.22)' }}
               >
                 {pad(active + 1)}
               </span>
@@ -253,18 +260,18 @@ export function ServicesShowcase({ services, loading }: { services: AnyService[]
                       aria-hidden={!on}
                       className={`col-start-1 row-start-1 ${on ? '' : 'pointer-events-none'}`}
                     >
-                      <div className={`flex items-center gap-4 ${base} ${vis}`} style={d(0)}>
+                      <div className={`flex items-center gap-3 lg:gap-4 ${base} ${vis}`} style={d(0)}>
                         <span className="font-heading text-sm font-extrabold tracking-[0.3em] text-gold">{pad(i + 1)}</span>
-                        <span className={`h-px bg-gold transition-all duration-[900ms] ${on ? 'w-16' : 'w-4'}`} />
+                        <span className={`h-px bg-gold transition-all duration-[900ms] ${on ? 'w-14 lg:w-16' : 'w-4'}`} />
                         <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-navy/50">Service</span>
                       </div>
 
-                      <h3 className={`mt-4 font-heading text-[2rem] font-extrabold leading-[1.08] text-navy sm:text-5xl lg:mt-6 lg:text-[3.6rem] ${base} ${vis}`} style={d(80)}>
+                      <h3 className={`mt-3 font-heading text-[1.7rem] font-extrabold leading-[1.1] text-navy sm:text-4xl lg:mt-6 lg:text-[3.6rem] lg:leading-[1.08] ${base} ${vis}`} style={d(80)}>
                         {title}
                       </h3>
 
                       {text && (
-                        <p className={`mt-4 max-w-lg line-clamp-4 text-[15px] leading-relaxed text-body lg:mt-6 lg:line-clamp-none lg:text-[17px] ${base} ${vis}`} style={d(160)}>
+                        <p className={`mt-3 max-w-lg line-clamp-3 text-[14px] leading-relaxed text-body lg:mt-6 lg:line-clamp-none lg:text-[17px] ${base} ${vis}`} style={d(160)}>
                           {text}
                         </p>
                       )}
@@ -279,7 +286,7 @@ export function ServicesShowcase({ services, loading }: { services: AnyService[]
                         </ul>
                       )}
 
-                      <div className={`mt-6 lg:mt-8 ${base} ${vis}`} style={d(300)}>
+                      <div className={`mt-4 lg:mt-8 ${base} ${vis}`} style={d(300)}>
                         <ArrowLink to={sv.slug ? `/services/${sv.slug}` : '/services'} variant="navy">Explore Service</ArrowLink>
                       </div>
                     </article>
@@ -288,8 +295,8 @@ export function ServicesShowcase({ services, loading }: { services: AnyService[]
               </div>
 
               {/* index + progress */}
-              <div className="relative mt-4 lg:mt-0">
-                <div className="flex items-center gap-1 sm:gap-2">
+              <div className="relative">
+                <div className="flex items-center justify-between gap-1 sm:gap-2 lg:justify-start">
                   {list.map((sv, i) => (
                     <button
                       key={sv.id ?? i}
@@ -297,7 +304,7 @@ export function ServicesShowcase({ services, loading }: { services: AnyService[]
                       onClick={() => goTo(i)}
                       aria-label={`Go to ${pick(sv, ['title', 'name'])}`}
                       aria-current={i === active}
-                      className={`relative px-2 py-2 font-heading text-xs font-bold tracking-widest transition-colors duration-300 sm:px-3 ${
+                      className={`relative px-2 py-1.5 font-heading text-xs font-bold tracking-widest transition-colors duration-300 sm:px-3 ${
                         i === active ? 'text-gold' : 'text-navy/35 hover:text-navy'
                       }`}
                     >

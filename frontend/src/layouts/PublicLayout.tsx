@@ -18,6 +18,10 @@ const COMPANY = {
   email: 'starlinkenterprises51@gmail.com',
 }
 
+/**
+ * Header height (px). Mobile header ab pehle se bada hai (84px, scroll pe 68px).
+ * Agar yahan badlo to HomeHero ka mobile top padding (pt-[112px]) aur `main` ka pt bhi match karo.
+ */
 const NAV: { to: string; label: string; Icon: LucideIcon }[] = [
   { to: '/', label: 'Home', Icon: Home },
   { to: '/about-us', label: 'About Us', Icon: Info },
@@ -27,6 +31,17 @@ const NAV: { to: string; label: string; Icon: LucideIcon }[] = [
   { to: '/why-choose-us', label: 'Why Choose Us', Icon: Award },
   { to: '/contact', label: 'Contact', Icon: Mail },
 ]
+
+// Footer service links — slug admin ki service ke slug se match hona chahiye.
+const FOOTER_SERVICES: { label: string; slug: string }[] = [
+  { label: 'Civil Execution', slug: 'civil-execution' },
+  { label: 'MEP Solutions', slug: 'mep-solutions' },
+  { label: 'Interior Fit-Outs', slug: 'interior-fit-outs' },
+  { label: 'Retail Fit-Outs', slug: 'retail-fit-outs' },
+  { label: 'Commercial Spaces', slug: 'commercial-spaces' },
+  { label: 'Turnkey Projects', slug: 'turnkey-projects' },
+]
+
 // Pages whose hero sits under a transparent header. 'light' = dark text (light banner), 'dark' = white text (dark hero).
 const OVERLAY: Record<string, 'light' | 'dark'> = { '/': 'light', '/contact': 'dark' }
 
@@ -77,13 +92,16 @@ function Header({ onMenu }: { onMenu: () => void }) {
   return (
     <header className={cx(
       'fixed inset-x-0 top-0 z-40 transition-all duration-500',
-      overlay ? (mode === 'light' ? 'bg-gradient-to-b from-white/85 via-white/40 to-transparent' : 'bg-transparent') : 'bg-white/90 backdrop-blur-xl',
+      overlay
+        ? (mode === 'light' ? 'bg-gradient-to-b from-[#fffdf8]/95 via-[#fffdf8]/60 to-transparent' : 'bg-transparent')
+        : 'border-b border-gold/15 bg-white/90 backdrop-blur-xl',
       scrolled && 'shadow-[0_8px_30px_-12px_rgba(10,25,60,0.25)]',
     )}>
-      <div className={cx('container-x flex items-center justify-between gap-4 transition-all duration-500', scrolled ? 'h-[64px] lg:h-[72px]' : 'h-[72px] lg:h-[84px]')}>
+      {/* mobile: 84px (scroll pe 68px) — pehle 72px tha, ab logo aur buttons ko zyada jagah */}
+      <div className={cx('container-x flex items-center justify-between gap-3 transition-all duration-500', scrolled ? 'h-[68px] lg:h-[72px]' : 'h-[84px]')}>
         <Link to="/" aria-label="Starlink Enterprises home" className={cx('shrink-0 transition-all duration-700', ready ? 'translate-y-0 opacity-100' : '-translate-y-3 opacity-0')}>
           <img src="/assets/logo.png" alt="Starlink Enterprises"
-            className={cx('w-auto transition-all duration-500', scrolled ? 'h-11 lg:h-12' : 'h-12 sm:h-14 lg:h-16', onDark && 'rounded-md bg-white p-1')} />
+            className={cx('w-auto transition-all duration-500', scrolled ? 'h-12' : 'h-14 sm:h-16', onDark && 'rounded-md bg-white p-1')} />
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-5 lg:flex xl:gap-8">
@@ -108,14 +126,18 @@ function Header({ onMenu }: { onMenu: () => void }) {
         </nav>
 
         <div className={cx('flex items-center gap-2.5 transition-all duration-700 sm:gap-3', ready ? 'translate-y-0 opacity-100' : '-translate-y-3 opacity-0')}>
+          {/* call: gold gradient circle */}
           <a href={`tel:${COMPANY.phoneTel}`} aria-label="Call us"
-            className={cx('grid h-11 w-11 place-items-center rounded-full border transition lg:hidden', onDark ? 'border-white/30 text-white' : 'border-gold/40 text-gold')}>
-            <Phone size={18} />
+            className={cx('grid h-12 w-12 place-items-center rounded-full transition active:scale-95 lg:hidden',
+              onDark ? 'border border-white/30 bg-white/10 text-white backdrop-blur' : 'bg-gradient-to-br from-gold to-gold-light text-navy-deep shadow-md shadow-gold/30')}>
+            <Phone size={19} />
           </a>
           <GoldButton to="/contact" className="hidden xl:inline-flex">Get a Quote</GoldButton>
+          {/* menu: navy circle with gold ring */}
           <button onClick={onMenu} aria-label="Open menu"
-            className={cx('grid h-11 w-11 place-items-center rounded-full border transition active:scale-95 lg:hidden', onDark ? 'border-white/30 bg-white/10 text-white backdrop-blur' : 'border-navy/10 bg-navy-deep text-white')}>
-            <Menu size={20} />
+            className={cx('grid h-12 w-12 place-items-center rounded-full transition active:scale-95 lg:hidden',
+              onDark ? 'border border-white/30 bg-white/10 text-white backdrop-blur' : 'bg-navy-deep text-white shadow-md ring-1 ring-gold/50')}>
+            <Menu size={21} />
           </button>
         </div>
       </div>
@@ -151,8 +173,8 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-gold/10 blur-3xl" />
 
         <div className="relative flex items-center justify-between px-6 pb-2 pt-6">
-          <img src="/assets/logo.png" alt="Starlink Enterprises" className="h-14 w-auto brightness-0 invert" />
-          <button onClick={onClose} aria-label="Close menu" className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/10 transition active:scale-90"><X size={20} /></button>
+          <img src="/assets/logo.png" alt="Starlink Enterprises" className="h-16 w-auto brightness-0 invert" />
+          <button onClick={onClose} aria-label="Close menu" className="grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-white/10 transition active:scale-90"><X size={20} /></button>
         </div>
 
         <nav className="relative mt-4 flex-1 space-y-1.5 overflow-y-auto px-4" aria-label="Mobile">
@@ -227,7 +249,8 @@ function FooterHeading({ children }: { children: React.ReactNode }) {
 
 function FooterLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
-    <Link to={to} className="group inline-flex items-center gap-1.5 text-sm text-white/65 transition duration-300 hover:translate-x-1 hover:text-gold-light">
+    // py-1: mobile pe tap target bada (pehle ~20px tha)
+    <Link to={to} className="group inline-flex items-center gap-1.5 py-1 text-sm text-white/65 transition duration-300 hover:translate-x-1 hover:text-gold-light">
       <ChevronRight size={13} className="-ml-4 text-gold opacity-0 transition-all duration-300 group-hover:ml-0 group-hover:opacity-100" aria-hidden="true" />{children}
     </Link>
   )
@@ -240,10 +263,9 @@ function Footer() {
     { Icon: Phone, k: 'Call Us', v: COMPANY.phoneDisplay, href: `tel:${COMPANY.phoneTel}` },
     { Icon: Mail, k: 'Email Us', v: COMPANY.email, href: `mailto:${COMPANY.email}` },
   ]
-  const services = ['Civil Execution', 'MEP Solutions', 'Interior Fit-Outs', 'Retail Fit-Outs', 'Commercial Spaces', 'Turnkey Projects']
 
   return (
-    <footer className="relative overflow-hidden rounded-t-[2rem] bg-navy-deep text-white lg:rounded-t-[3rem]">
+    <footer className="relative mt-10 overflow-hidden rounded-t-[2rem] bg-navy-deep text-white sm:mt-14 lg:mt-20 lg:rounded-t-[3rem]">
       {/* background design */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-60" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(197,147,61,0.18) 1px, transparent 0)', backgroundSize: '28px 28px' }} />
       <div aria-hidden="true" className="pointer-events-none absolute -right-32 -top-32 h-[420px] w-[420px] rounded-full bg-gold/15 blur-3xl" />
@@ -259,7 +281,8 @@ function Footer() {
             <h2 className="mt-2 max-w-xl text-2xl font-extrabold leading-tight !text-white sm:text-3xl">Ready to start your next <span className="text-gold-light">commercial project?</span></h2>
             <p className="mt-2 max-w-lg text-sm text-white/65">Civil, MEP and turnkey interiors — one accountable team from concept to handover.</p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
+          {/* mobile: dono buttons full-width, tablet+: side by side */}
+          <div className="flex flex-col gap-3 sm:flex-row [&>*]:w-full sm:[&>*]:w-auto">
             <a href={`tel:${COMPANY.phoneTel}`} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 px-6 py-3 text-[13px] font-semibold transition hover:border-gold hover:text-gold-light"><Phone size={15} aria-hidden="true" />{COMPANY.phoneDisplay}</a>
             <GoldButton to="/contact">Get a Free Quote</GoldButton>
           </div>
@@ -278,13 +301,13 @@ function Footer() {
 
           <div>
             <FooterHeading>Quick Links</FooterHeading>
-            <ul className="mt-5 space-y-3">{NAV.map((l) => <li key={l.to}><FooterLink to={l.to}>{l.label}</FooterLink></li>)}</ul>
+            <ul className="mt-5 space-y-1.5">{NAV.map((l) => <li key={l.to}><FooterLink to={l.to}>{l.label}</FooterLink></li>)}</ul>
           </div>
 
           <div>
             <FooterHeading>Our Services</FooterHeading>
-            <ul className="mt-5 space-y-3">
-              {services.map((t) => <li key={t}><FooterLink to={`/services/${t.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>{t}</FooterLink></li>)}
+            <ul className="mt-5 space-y-1.5">
+              {FOOTER_SERVICES.map((sv) => <li key={sv.slug}><FooterLink to={`/services/${sv.slug}`}>{sv.label}</FooterLink></li>)}
             </ul>
           </div>
 
@@ -305,7 +328,7 @@ function Footer() {
           </div>
         </div>
 
-        {/* bottom bar */}
+        {/* bottom bar — mobile pe pb-32 taaki bottom app-bar content ko na dhake */}
         <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 py-6 pb-32 text-xs text-white/55 sm:flex-row lg:pb-6">
           <p className="text-center sm:text-left">© {new Date().getFullYear()} {s.company_name}. All Rights Reserved.</p>
           <div className="flex items-center gap-4">
@@ -331,7 +354,8 @@ export function PublicLayout() {
       <BrandIntro />
       <Header onMenu={() => setMenu(true)} />
       <MobileMenu open={menu} onClose={() => setMenu(false)} />
-      <main id="main" className={OVERLAY[pathname] ? '' : 'pt-[72px] lg:pt-[84px]'}><Outlet /></main>
+      {/* header 84px (mobile + desktop) — overlay pages (Home/Contact) apna hero khud neeche rakhte hain */}
+      <main id="main" className={OVERLAY[pathname] ? '' : 'pt-[84px]'}><Outlet /></main>
       <Footer />
       <BottomNav onMore={() => setMenu(true)} />
     </>
