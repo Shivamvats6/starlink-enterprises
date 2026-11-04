@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         if (!Schema::hasColumn('banners', 'mobile_text_theme')) {
             Schema::table('banners', function (Blueprint $t) {
-                $t->string('mobile_text_theme', 10)->default('dark')->after('slide_seconds'); // dark | light
+                $t->string('mobile_text_theme', 10)->default('dark'); // dark | light
             });
         }
     }
