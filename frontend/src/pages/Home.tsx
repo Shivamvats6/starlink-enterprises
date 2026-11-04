@@ -1,12 +1,11 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, Quote, Star } from 'lucide-react'
+import { ArrowUpRight, Award, Building2, Clock, Quote, Star, Users } from 'lucide-react'
 import { getHome } from '@/services/api'
 import { useAsync } from '@/hooks/useAsync'
 import { useSeo } from '@/hooks/useSeo'
 import { useReveal } from '@/animations/useReveal'
 import { ArrowLink, EmptyState, ErrorState, Img, SectionHeading, Skeleton } from '@/components/ui'
-import { ServiceImageCard } from '@/components/Cards'
 import { CtaBand } from '@/components/CtaBand'
 import { HomeHero } from '@/sections/HomeHero'
 import { ProjectBook } from '@/sections/ProjectBook'
@@ -33,7 +32,7 @@ function PartnerCard({ name, logo, index }: { name: string; logo: string; index:
   const [failed, setFailed] = useState(false)
   return (
     <div className="group relative w-[280px] shrink-0 sm:w-[340px] lg:w-[420px]">
-      <div className="relative flex h-52 flex-col items-center justify-center overflow-hidden rounded-card border border-line bg-white p-4 shadow-card transition-all duration-500 ease-out sm:h-60 lg:h-72lg:group-hover:-translate-y-2 lg:group-hover:border-gold/60 lg:group-hover:shadow-2xl">
+      <div className="relative flex h-52 flex-col items-center justify-center overflow-hidden rounded-card border border-line bg-white p-4 shadow-card transition-all duration-500 ease-out sm:h-60 lg:h-72 lg:group-hover:-translate-y-2 lg:group-hover:border-gold/60 lg:group-hover:shadow-2xl">
         {/* corner glow */}
         <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gold/10 blur-2xl transition-all duration-500 group-hover:scale-150 group-hover:bg-gold/25" />
         {/* shine sweep */}
@@ -52,7 +51,7 @@ function PartnerCard({ name, logo, index }: { name: string; logo: string; index:
             loading="lazy"
             draggable={false}
             onError={() => setFailed(true)}
-            className="relative max-h-32 w-full max-w-[88%] object-contain transition-transform duration-500 sm:max-h-40 lg:max-h-52lg:group-hover:scale-110"
+            className="relative max-h-32 w-full max-w-[88%] object-contain transition-transform duration-500 sm:max-h-40 lg:max-h-52 lg:group-hover:scale-110"
           />
         )}
 
@@ -160,6 +159,271 @@ function ServiceHighlightCard({ service, index }: { service: any; index: number 
   )
 }
 
+/* ------------------------------------------------------------------ */
+/* STATS — premium dark glass cards, white animated counters           */
+/* ------------------------------------------------------------------ */
+const STAT_ICONS = [Building2, Award, Users, Clock]
+
+function StatCounter({ value, suffix }: { value: number | string; suffix?: string }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const target = parseFloat(String(value).replace(/[^\d.]/g, '')) || 0
+  const numRef = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduce) {
+      if (numRef.current) numRef.current.textContent = Math.round(target).toLocaleString('en-IN')
+      return
+    }
+    let raf = 0
+    const run = () => {
+      const start = performance.now()
+      const dur = 1900
+      const tick = (now: number) => {
+        const p = Math.min(1, (now - start) / dur)
+        const eased = 1 - Math.pow(1 - p, 3)
+        if (numRef.current) numRef.current.textContent = Math.round(target * eased).toLocaleString('en-IN')
+        if (p < 1) raf = requestAnimationFrame(tick)
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          run()
+          io.disconnect()
+        }
+      },
+      { threshold: 0.4 },
+    )
+    io.observe(el)
+    return () => {
+      io.disconnect()
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [target])
+
+  return (
+    <span ref={ref} className="inline-flex items-baseline tabular-nums">
+      <span ref={numRef} className="text-white">0</span>
+      {suffix ? <span className="ml-0.5 bg-gradient-to-b from-gold-light to-gold bg-clip-text text-[0.65em] font-extrabold text-transparent">{suffix}</span> : null}
+    </span>
+  )
+}
+
+function StatsSection({ stats }: { stats: any[] }) {
+  return (
+    <section className="relative isolate overflow-hidden bg-navy-deep py-16 sm:py-20 lg:py-28">
+      {/* ---- background layers ---- */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-navy via-navy-deep to-navy-deep" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-60" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(197,147,61,0.2) 1px, transparent 0)', backgroundSize: '30px 30px' }} />
+      <div aria-hidden="true" className="pointer-events-none absolute -left-32 -top-20 -z-10 h-[460px] w-[460px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(197,147,61,0.22), transparent 68%)' }} />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -right-32 -z-10 h-[480px] w-[480px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(197,147,61,0.18), transparent 68%)' }} />
+      <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 -z-10 h-72 w-72 rounded-full border-[26px] border-gold/[0.06]" />
+      <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap font-heading text-[26vw] font-extrabold leading-none text-white/[0.02]">IMPACT</span>
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+      <div className="container-x relative">
+        <div data-reveal className="mx-auto max-w-2xl text-center">
+          <p className="inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.3em] text-gold">
+            <span className="h-px w-8 bg-gold/70" />
+            Our Impact
+            <span className="h-px w-8 bg-gold/70" />
+          </p>
+          <h2 className="mt-3 font-heading text-3xl font-extrabold leading-tight !text-white sm:text-4xl lg:text-5xl">
+            Numbers That <span className="bg-gradient-to-r from-gold-light to-gold bg-clip-text text-transparent">Speak</span>
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-sm text-white/60 sm:text-base">Years of precise execution, delivered project after project.</p>
+        </div>
+
+        <div data-reveal-group className="mt-10 grid grid-cols-2 gap-3 sm:mt-14 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+          {stats.map((st, i) => {
+            const StatIcon = STAT_ICONS[i % STAT_ICONS.length]
+            return (
+              <div
+                key={st.label}
+                data-reveal
+                className="group relative flex flex-col overflow-hidden rounded-[22px] border border-white/10 bg-gradient-to-b from-white/[0.10] to-white/[0.03] p-4 shadow-[0_20px_40px_-20px_rgba(0,0,0,0.6)] transition-all duration-500 ease-out active:scale-[0.97] sm:rounded-[28px] sm:p-7 lg:hover:-translate-y-2 lg:hover:border-gold/50 lg:hover:shadow-[0_30px_60px_-20px_rgba(197,147,61,0.35)]"
+              >
+                {/* inner top highlight */}
+                <span aria-hidden="true" className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                {/* corner glow */}
+                <span aria-hidden="true" className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-70 transition-opacity duration-500 group-hover:opacity-100" style={{ background: 'radial-gradient(circle, rgba(197,147,61,0.4), transparent 70%)' }} />
+                {/* big faded index */}
+                <span aria-hidden="true" className="pointer-events-none absolute -bottom-3 right-2 select-none font-heading text-7xl font-extrabold leading-none text-white/[0.04] sm:text-8xl">0{i + 1}</span>
+
+                <div className="relative flex items-center justify-between">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl border border-gold/30 bg-gold/10 text-gold-light transition-all duration-500 group-hover:rotate-[8deg] group-hover:scale-110 group-hover:bg-gold group-hover:text-white sm:h-12 sm:w-12 sm:rounded-2xl">
+                    <StatIcon size={20} aria-hidden="true" />
+                  </span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-gold shadow-[0_0_10px_2px_rgba(212,175,55,0.7)]" aria-hidden="true" />
+                </div>
+
+                <p className="relative mt-5 font-heading text-4xl font-extrabold leading-none sm:mt-7 sm:text-5xl lg:text-6xl">
+                  <StatCounter value={st.value} suffix={st.suffix} />
+                </p>
+
+                <span aria-hidden="true" className="relative mt-4 block h-px w-10 bg-gradient-to-r from-gold to-transparent transition-all duration-500 group-hover:w-full" />
+
+                <p className="relative mt-3 text-[11px] font-semibold uppercase leading-snug tracking-[0.14em] text-white/70 sm:text-xs">{st.label}</p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* TESTIMONIALS — premium dark glass, mobile = swipe carousel + dots   */
+/* ------------------------------------------------------------------ */
+function initials(name: string) {
+  return (
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join('')
+      .toUpperCase() || 'C'
+  )
+}
+
+function TestimonialCard({ t, index }: { t: any; index: number }) {
+  const rating = Math.max(0, Math.min(5, Number(t.rating) || 5))
+  const sub = [t.role, t.location].filter(Boolean).join(' · ')
+  return (
+    <figure
+      data-reveal
+      className="group relative flex h-full w-[86%] shrink-0 snap-center flex-col overflow-hidden rounded-[24px] border border-white/10 bg-gradient-to-b from-white/[0.10] to-white/[0.03] p-6 shadow-[0_24px_50px_-24px_rgba(0,0,0,0.7)] transition-all duration-500 ease-out active:scale-[0.98] sm:w-auto sm:rounded-[28px] sm:p-8 lg:hover:-translate-y-2 lg:hover:border-gold/50 lg:hover:shadow-[0_30px_60px_-20px_rgba(197,147,61,0.35)]"
+    >
+      <span aria-hidden="true" className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+      <span aria-hidden="true" className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full opacity-70 transition-opacity duration-500 group-hover:opacity-100" style={{ background: 'radial-gradient(circle, rgba(197,147,61,0.4), transparent 70%)' }} />
+      <span aria-hidden="true" className="pointer-events-none absolute -bottom-6 right-4 select-none font-heading text-8xl font-extrabold leading-none text-white/[0.04]">0{index + 1}</span>
+
+      <div className="relative flex items-center justify-between">
+        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-gold to-gold-light text-navy-deep shadow-[0_8px_24px_-6px_rgba(212,175,55,0.6)] transition-transform duration-500 group-hover:rotate-[8deg] group-hover:scale-110">
+          <Quote size={22} fill="currentColor" aria-hidden="true" />
+        </span>
+        <div className="flex gap-0.5 text-gold-light" role="img" aria-label={`${rating} out of 5`}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} size={15} fill={i < rating ? 'currentColor' : 'none'} className={i < rating ? '' : 'text-white/20'} aria-hidden="true" />
+          ))}
+        </div>
+      </div>
+
+      <blockquote className="relative mt-6 flex-1 text-[15px] font-semibold leading-[1.75] text-white sm:text-base">“{t.quote}”</blockquote>
+
+      <span aria-hidden="true" className="relative mt-6 block h-px w-full bg-gradient-to-r from-gold/50 via-white/10 to-transparent" />
+
+      <figcaption className="relative mt-5 flex items-center gap-3.5">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-gold-light to-gold font-heading text-sm font-extrabold text-navy-deep ring-2 ring-white/20 ring-offset-2 ring-offset-navy-deep">
+          {initials(t.name)}
+        </span>
+        <span className="min-w-0">
+          <strong className="block truncate font-heading text-sm font-extrabold text-white sm:text-base">{t.name}</strong>
+          {sub && <span className="mt-0.5 block truncate text-xs font-medium text-white/75">{sub}</span>}
+        </span>
+      </figcaption>
+    </figure>
+  )
+}
+
+function TestimonialsSection({ items }: { items: any[] }) {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const [active, setActive] = useState(0)
+
+  const avg = items.length ? items.reduce((sum, t) => sum + (Number(t.rating) || 5), 0) / items.length : 5
+
+  const onScroll = () => {
+    const el = scrollerRef.current
+    if (!el || !el.children.length) return
+    const first = el.children[0] as HTMLElement
+    const step = first.offsetWidth + 16
+    setActive(Math.min(items.length - 1, Math.max(0, Math.round(el.scrollLeft / step))))
+  }
+
+  const goTo = (i: number) => {
+    const el = scrollerRef.current
+    if (!el) return
+    const first = el.children[0] as HTMLElement
+    el.scrollTo({ left: i * (first.offsetWidth + 16), behavior: 'smooth' })
+  }
+
+  return (
+    <section className="relative isolate overflow-hidden bg-navy-deep py-16 sm:py-20 lg:py-28">
+      {/* ---- background ---- */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-navy-deep via-navy to-navy-deep" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-50" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(197,147,61,0.18) 1px, transparent 0)', backgroundSize: '28px 28px' }} />
+      <div aria-hidden="true" className="pointer-events-none absolute -left-40 top-10 -z-10 h-[520px] w-[520px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(197,147,61,0.18), transparent 68%)' }} />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-10 -right-40 -z-10 h-[520px] w-[520px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(197,147,61,0.14), transparent 68%)' }} />
+      <Quote aria-hidden="true" className="pointer-events-none absolute -left-6 top-10 -z-10 h-56 w-56 text-white/[0.03] sm:h-80 sm:w-80" fill="currentColor" />
+      <Quote aria-hidden="true" className="pointer-events-none absolute -right-6 bottom-10 -z-10 h-56 w-56 rotate-180 text-gold/[0.05] sm:h-80 sm:w-80" fill="currentColor" />
+      <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-24 -z-10 -translate-x-1/2 select-none whitespace-nowrap font-heading text-[16vw] font-extrabold leading-none text-white/[0.025]">REVIEWS</span>
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
+
+      <div className="container-x relative">
+        <div data-reveal className="mx-auto max-w-2xl text-center">
+          <p className="inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.3em] text-gold">
+            <span className="h-px w-8 bg-gold/70" />
+            Testimonials
+            <span className="h-px w-8 bg-gold/70" />
+          </p>
+          <h2 className="mt-3 font-heading text-3xl font-extrabold leading-tight !text-white sm:text-4xl lg:text-5xl">
+            What Our Clients <span className="bg-gradient-to-r from-gold-light to-gold bg-clip-text text-transparent">Say</span>
+          </h2>
+          <p className="mx-auto mt-3 max-w-md text-sm font-medium text-white/80 sm:text-base">Real words from the brands and people we have built spaces for.</p>
+
+          {/* rating pill */}
+          <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.06] px-5 py-2.5">
+            <span className="font-heading text-2xl font-extrabold leading-none text-white">{avg.toFixed(1)}</span>
+            <span className="flex text-gold-light" aria-hidden="true">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} size={14} fill={i < Math.round(avg) ? 'currentColor' : 'none'} className={i < Math.round(avg) ? '' : 'text-white/25'} />
+              ))}
+            </span>
+            <span className="h-4 w-px bg-white/20" aria-hidden="true" />
+            <span className="text-xs font-semibold text-white/80">{items.length} {items.length === 1 ? 'review' : 'reviews'}</span>
+          </div>
+        </div>
+
+        {/* mobile: swipe carousel (app jesa) | tablet+: grid */}
+        <div
+          ref={scrollerRef}
+          onScroll={onScroll}
+          data-reveal-group
+          className="-mx-4 mt-10 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto px-4 pb-4 pt-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:mt-14 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden"
+        >
+          {items.map((t, i) => (
+            <TestimonialCard key={t.id} t={t} index={i} />
+          ))}
+        </div>
+
+        {/* mobile dots */}
+        {items.length > 1 && (
+          <div className="mt-4 flex items-center justify-center gap-2 sm:hidden" role="tablist" aria-label="Testimonials">
+            {items.map((t, i) => (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={i === active}
+                aria-label={`Go to testimonial ${i + 1}`}
+                onClick={() => goTo(i)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${i === active ? 'w-7 bg-gold' : 'w-1.5 bg-white/25'}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
 export default function Home() {
   const { data, error, loading, reload } = useAsync(getHome)
   const ref = useRef<HTMLDivElement>(null)
@@ -170,11 +434,10 @@ export default function Home() {
   const banner = data?.banners[0]
   const s = data?.settings
   const featured = data?.services.slice(0, 4) ?? []
-  const imageServices = data?.services.filter((x) => ['civil-execution', 'mep-solutions', 'interior-fit-outs'].includes(x.slug)) ?? []
 
   return (
     <div ref={ref}>
-      <HomeHero banner={banner} settings={s} loading={loading} />
+      <HomeHero banner={banner} banners={data?.banners} settings={s} loading={loading} />
 
       {/* SERVICE HIGHLIGHTS — premium cards, hover reveal, mobile = swipe carousel */}
       <section id="after-hero" className="pb-6 pt-12 lg:pt-32">
@@ -231,20 +494,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* STATS */}
-      {s && s.stats.length > 0 && (
-        <section className="relative overflow-hidden bg-navy py-16">
-          <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-72 w-72 rounded-full border-[28px] border-gold/10" />
-          <div data-reveal-group className="container-x relative grid grid-cols-2 gap-10 text-center md:grid-cols-4">
-            {s.stats.map((st) => (
-              <div key={st.label}>
-                <p className="font-heading text-5xl font-extrabold text-gold-light"><span data-count data-count-to={st.value} data-count-suffix={st.suffix ?? ''}>{st.value}{st.suffix}</span></p>
-                <p className="mt-2 text-sm text-white/70">{st.label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* STATS — premium redesign */}
+      {s && s.stats.length > 0 && <StatsSection stats={s.stats} />}
 
       {/* SERVICES */}
       <ServicesShowcase services={data?.services ?? []} loading={loading} />
@@ -298,24 +549,8 @@ export default function Home() {
       {/* PARTNERS / CLIENT BRANDS */}
       <PartnersSection />
 
-      {/* TESTIMONIALS (only approved, real entries) */}
-      {data && data.testimonials.length > 0 && (
-        <section className="bg-navy py-20 lg:py-28">
-          <div className="container-x">
-            <SectionHeading light eyebrow="Testimonials" title="What Our Clients Say" />
-            <div data-reveal-group className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {data.testimonials.map((t) => (
-                <figure key={t.id} className="rounded-card bg-white p-6">
-                  <Quote className="text-gold" size={26} aria-hidden="true" />
-                  <blockquote className="mt-3 text-sm leading-relaxed text-body">{t.quote}</blockquote>
-                  <div className="mt-3 flex text-gold" aria-label={`${t.rating} out of 5`}>{Array.from({ length: t.rating }).map((_, i) => <Star key={i} size={14} fill="currentColor" />)}</div>
-                  <figcaption className="mt-2 text-sm"><strong className="text-navy">{t.name}</strong>{(t.role || t.location) && <span className="text-muted"> · {[t.role, t.location].filter(Boolean).join(', ')}</span>}</figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* TESTIMONIALS (only approved, real entries) — premium redesign */}
+      {data && data.testimonials.length > 0 && <TestimonialsSection items={data.testimonials} />}
 
       <CtaBand />
     </div>

@@ -40,9 +40,29 @@ export const PagesAdmin = () => (
 )
 
 export const BannersAdmin = () => (
-  <SimpleCrud<Banner> resource="banners" title="Banner Management" singular="Banner" description="The first active banner (by order) powers the homepage hero. Heading and text are real HTML, not part of the image."
-    blank={{ eyebrow: 'Turnkey Execution For', heading: '', subheading: '', cta_label: 'Our Services', cta_url: '/services', secondary_cta_label: 'View Projects', secondary_cta_url: '/projects', desktop_image: '', mobile_image: '', focal_x: 50, focal_y: 50, display_order: 1, is_active: true }}
-    columns={[{ label: 'Preview', render: (r) => <Img src={r.desktop_image} alt="" className="h-12 w-20 rounded" /> }, { label: 'Heading', render: (r) => <span className="font-medium text-navy">{r.heading}</span> }, { label: 'Order', render: (r) => r.display_order }, { label: 'Status', render: (r) => yesNo(r.is_active, 'Published', 'Draft') }]}
-    fields={[{ name: 'eyebrow', label: 'Small Title (above heading)', type: 'text' }, { name: 'heading', label: 'Heading (wrap a word in *stars* to make it gold)', type: 'text', required: true, full: true }, { name: 'subheading', label: 'Supporting Text', type: 'textarea', rows: 2 }, { name: 'cta_label', label: 'Primary CTA Label', type: 'text' }, { name: 'cta_url', label: 'Primary CTA URL', type: 'text' }, { name: 'secondary_cta_label', label: 'Secondary CTA Label', type: 'text' }, { name: 'secondary_cta_url', label: 'Secondary CTA URL', type: 'text' },
-      { name: 'desktop_image', label: 'Desktop Image (≈1920 × 900)', type: 'image' }, { name: 'mobile_image', label: 'Mobile Image', type: 'image' }, { name: 'focal_x', label: 'Focal Point X (%)', type: 'number' }, { name: 'focal_y', label: 'Focal Point Y (%)', type: 'number' }, { name: 'display_order', label: 'Display Order', type: 'number' }, { name: 'is_active', label: 'Active (published)', type: 'checkbox' }]} />
+  <SimpleCrud<Banner> resource="banners" title="Hero Slider Banners" singular="Slide"
+    description="Homepage hero slider. Active slides display order ke hisaab se chalte hain (max 5, recommended 3). Heading me *star* lagao to word gold ho jayega."
+    blank={{ eyebrow: 'Turnkey Execution For', heading: '', subheading: '', cta_label: 'Our Services', cta_url: '/services', secondary_cta_label: 'View Projects', secondary_cta_url: '/projects', desktop_image: '', mobile_image: '', mobile_text_theme: 'dark',focal_x: 50, focal_y: 50, slide_seconds: 6, display_order: 1, is_active: true } as any}
+    columns={[
+      { label: 'Preview', render: (r) => <Img src={r.desktop_image} alt="" className="h-12 w-20 rounded" /> },
+      { label: 'Heading', render: (r) => <span className="line-clamp-1 max-w-xs font-medium text-navy">{r.heading}</span> },
+      { label: 'Order', render: (r) => <span className="font-heading font-bold text-gold">#{r.display_order}</span> },
+      { label: 'Duration', render: (r) => `${(r as any).slide_seconds ?? 6}s` },
+      { label: 'Status', render: (r) => yesNo(r.is_active, 'Live', 'Hidden') },
+    ]}
+    fields={[
+      { name: 'eyebrow', label: 'Small Title (above heading)', type: 'text' },
+      { name: 'heading', label: 'Heading (*word* = gold)', type: 'text', required: true, full: true },
+      { name: 'subheading', label: 'Supporting Text', type: 'textarea', rows: 2 },
+      { name: 'cta_label', label: 'Primary Button Label', type: 'text' }, { name: 'cta_url', label: 'Primary Button URL', type: 'text' },
+      { name: 'secondary_cta_label', label: 'Secondary Button Label', type: 'text' }, { name: 'secondary_cta_url', label: 'Secondary Button URL', type: 'text' },
+      { name: 'desktop_image', label: 'Desktop Image (1920 × 900)', type: 'image' },
+      { name: 'mobile_image', label: 'Mobile Image (1200 × 960, optional)', type: 'image' },
+      { name: 'mobile_text_theme', label: 'Mobile Text Color', type: 'select', options: ['dark', 'light'], hint: 'Light background = dark, navy background = light' },
+      { name: 'focal_x', label: 'Focal Point X (%)', type: 'number', hint: '0 = left, 100 = right' },
+      { name: 'focal_y', label: 'Focal Point Y (%)', type: 'number', hint: '0 = top, 100 = bottom' },
+      { name: 'slide_seconds', label: 'Slide Duration (sec)', type: 'number', hint: '3 se 20 ke beech' },
+      { name: 'display_order', label: 'Display Order', type: 'number', hint: 'Chhota number pehle aata hai' },
+      { name: 'is_active', label: 'Live on website', type: 'checkbox' },
+    ]} />
 )

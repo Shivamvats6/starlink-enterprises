@@ -22,7 +22,7 @@ class PublicController extends Controller
     public function home()
     {
         return response()->json([
-            'banners' => Banner::where('is_active', true)->orderBy('display_order')->get(),
+            'banners' => Banner::where('is_active', true)->orderBy('display_order')->limit(5)->get(),
             'services' => Service::where('is_published', true)->orderBy('display_order')->get(),
             'featured_projects' => ProjectResource::collection($this->projectQuery()->where('is_featured', true)->latest('published_at')->limit(6)->get())->resolve(),
             'testimonials' => Testimonial::where('is_approved', true)->latest()->get(),
@@ -32,7 +32,7 @@ class PublicController extends Controller
 
     public function settings() { return response()->json(SettingsStore::all()); }
 
-    public function banners() { return response()->json(['data' => Banner::where('is_active', true)->orderBy('display_order')->get()]); }
+    public function banners() { return response()->json(['data' => Banner::where('is_active', true)->orderBy('display_order')->limit(5)->get()]); }
 
     public function services(Request $r)
     {
