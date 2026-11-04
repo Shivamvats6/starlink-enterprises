@@ -42,7 +42,13 @@ export const PagesAdmin = () => (
 export const BannersAdmin = () => (
   <SimpleCrud<Banner> resource="banners" title="Hero Slider Banners" singular="Slide"
     description="Homepage hero slider. Active slides display order ke hisaab se chalte hain (max 5, recommended 3). Heading me *star* lagao to word gold ho jayega."
-    blank={{ eyebrow: 'Turnkey Execution For', heading: '', subheading: '', cta_label: 'Our Services', cta_url: '/services', secondary_cta_label: 'View Projects', secondary_cta_url: '/projects', desktop_image: '', mobile_image: '', mobile_text_theme: 'dark',focal_x: 50, focal_y: 50, slide_seconds: 6, display_order: 1, is_active: true } as any}
+    blank={{
+      eyebrow: 'Turnkey Execution For', heading: '', subheading: '',
+      cta_label: 'Our Services', cta_url: '/services', secondary_cta_label: 'View Projects', secondary_cta_url: '/projects',
+      features: ['Building2|Retail Interiors', 'Wrench|Civil & MEP Execution', 'Award|Turnkey Delivery'],
+      desktop_image: '', mobile_image: '', mobile_text_theme: 'dark',
+      focal_x: 50, focal_y: 50, slide_seconds: 6, display_order: 1, is_active: true,
+    } as any}
     columns={[
       { label: 'Preview', render: (r) => <Img src={r.desktop_image} alt="" className="h-12 w-20 rounded" /> },
       { label: 'Heading', render: (r) => <span className="line-clamp-1 max-w-xs font-medium text-navy">{r.heading}</span> },
@@ -54,6 +60,7 @@ export const BannersAdmin = () => (
       { name: 'eyebrow', label: 'Small Title (above heading)', type: 'text' },
       { name: 'heading', label: 'Heading (*word* = gold)', type: 'text', required: true, full: true },
       { name: 'subheading', label: 'Supporting Text', type: 'textarea', rows: 2 },
+      { name: 'features', label: 'Desktop Feature Icons (max 3)', type: 'features', hint: 'Icon chuno aur label likho. Sirf desktop par buttons se pehle dikhta hai. Khali chhodo to hide.' },
       { name: 'cta_label', label: 'Primary Button Label', type: 'text' }, { name: 'cta_url', label: 'Primary Button URL', type: 'text' },
       { name: 'secondary_cta_label', label: 'Secondary Button Label', type: 'text' }, { name: 'secondary_cta_url', label: 'Secondary Button URL', type: 'text' },
       { name: 'desktop_image', label: 'Desktop Image (1920 × 900)', type: 'image' },

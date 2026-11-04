@@ -24,6 +24,7 @@ class ResourceController extends Controller
             'banners' => ['model' => Banner::class, 'order' => ['display_order', 'asc'], 'rules' => [
                 'eyebrow' => ['nullable', 'string', 'max:80'], 'heading' => ['required', 'string', 'max:255'], 'subheading' => ['nullable', 'string', 'max:1000'], 'cta_label' => ['nullable', 'string', 'max:64'], 'cta_url' => ['nullable', 'string', 'max:2048'],
                 'secondary_cta_label' => ['nullable', 'string', 'max:64'], 'secondary_cta_url' => ['nullable', 'string', 'max:2048'], 'mobile_text_theme' => ['nullable', 'in:dark,light'],'desktop_image' => $img, 'mobile_image' => $img,
+                'features' => ['nullable', 'array', 'max:3'], 'features.*' => ['nullable', 'string', 'max:80'],
                 'focal_x' => ['integer', 'between:0,100'], 'focal_y' => ['integer', 'between:0,100'], 'slide_seconds' => ['integer', 'between:3,20'], 'display_order' => ['integer', 'min:0'], 'is_active' => ['boolean']]],
             'testimonials' => ['model' => Testimonial::class, 'order' => ['id', 'desc'], 'rules' => [
                 'name' => ['required', 'string', 'max:255'], 'role' => ['nullable', 'string', 'max:255'], 'location' => ['nullable', 'string', 'max:255'],

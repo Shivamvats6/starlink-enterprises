@@ -7,9 +7,10 @@ import { Badge, Confirm, FormField, ImageField, Modal } from './ui'
 import { useAdmin } from './AdminContext'
 import { ICON_NAMES } from '@/utils/icons'
 import { slugify } from '@/utils/format'
+import { FeatureIconsField } from './FeatureIconsField'
 
 export interface FieldDef {
-  name: string; label: string; type: 'text' | 'textarea' | 'number' | 'checkbox' | 'select' | 'image' | 'icon' | 'lines'
+  name: string; label: string; type: 'text' | 'textarea' | 'number' | 'checkbox' | 'select' | 'image' | 'icon' | 'lines' | 'features'
   required?: boolean; options?: string[]; hint?: string; full?: boolean; rows?: number
 }
 export interface ColDef<T> { label: string; render: (row: T) => ReactNode }
@@ -65,10 +66,11 @@ export function SimpleCrud<T extends Row>({ resource, title, description, singul
           <form onSubmit={save} className="grid gap-4 sm:grid-cols-2" noValidate>
             {fields.map((f) => {
               const v = getPath(edit, f.name); const er = errs[f.name]?.[0]
-              const wrap = (child: ReactNode) => <FormField key={f.name} label={f.label} required={f.required} error={er} hint={f.hint} className={f.full || f.type === 'textarea' || f.type === 'lines' || f.type === 'image' ? 'sm:col-span-2' : ''}>{child}</FormField>
+              const wrap = (child: ReactNode) => <FormField key={f.name} label={f.label} required={f.required} error={er} hint={f.hint} className={f.full || f.type === 'textarea' || f.type === 'lines' || f.type === 'features' || f.type === 'image' ? 'sm:col-span-2' : ''}>{child}</FormField>
               switch (f.type) {
                 case 'textarea': return wrap(<textarea rows={f.rows ?? 4} className="field" value={v ?? ''} onChange={(e) => set(f.name, e.target.value)} />)
                 case 'lines': return wrap(<textarea rows={f.rows ?? 4} className="field" value={(v ?? []).join('\n')} onChange={(e) => set(f.name, e.target.value.split('\n'))} onBlur={(e) => set(f.name, e.target.value.split('\n').map((x) => x.trim()).filter(Boolean))} />)
+                case 'features': return wrap(<FeatureIconsField key={String(edit.id ?? 'new')} value={v} onChange={(arr) => set(f.name, arr)} />)
                 case 'number': return wrap(<input type="number" className="field" value={v ?? 0} onChange={(e) => set(f.name, Number(e.target.value))} />)
                 case 'select': return wrap(<select className="field" value={v ?? ''} onChange={(e) => set(f.name, e.target.value)}>{f.options?.map((o) => <option key={o}>{o}</option>)}</select>)
                 case 'icon': return wrap(<select className="field" value={v ?? 'Sparkles'} onChange={(e) => set(f.name, e.target.value)}>{ICON_NAMES.map((o) => <option key={o}>{o}</option>)}</select>)

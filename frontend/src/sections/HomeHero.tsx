@@ -19,12 +19,23 @@ const TURN_ANGLE = 112 // degrees
 const TEXT_LAG = 320 // text page-turn ke beech me aana shuru hota hai
 
 type Dir = 'next' | 'prev'
-type SlideBanner = Banner & { slide_seconds?: number | null; mobile_text_theme?: 'dark' | 'light' | null }
+type SlideBanner = Banner & { slide_seconds?: number | null; mobile_text_theme?: 'dark' | 'light' | null; features?: string[] | null }
 
 const slideMs = (b?: SlideBanner) => {
   const s = Number(b?.slide_seconds)
   return (s >= 3 && s <= 20 ? s : DEFAULT_SECONDS) * 1000
 }
+
+/** Desktop feature icons: admin me har line "IconName|Label" (max 3) */
+const parseFeatures = (b: SlideBanner) =>
+  (Array.isArray(b.features) ? b.features : [])
+    .slice(0, 3)
+    .map((s) => {
+      const parts = String(s ?? '').split('|')
+      if (parts.length < 2) return { icon: 'Sparkles', label: parts[0].trim() }
+      return { icon: parts[0].trim() || 'Sparkles', label: parts.slice(1).join('|').trim() }
+    })
+    .filter((f) => f.label)
 
 /** staggered fade + rise + de-blur */
 const rv = (on: boolean, delay: number): React.CSSProperties => {
@@ -438,6 +449,7 @@ function HeroDesktop({ banners, settings, loading }: { banners: SlideBanner[]; s
           <div className="hero-copy grid w-full">
             {slides.map((b, n) => {
               const active = ready && n === cur
+              const feats = parseFeatures(b)
               return (
                 <div
                   key={b.id ?? n}
@@ -451,7 +463,22 @@ function HeroDesktop({ banners, settings, loading }: { banners: SlideBanner[]; s
                   </div>
                   <h1 className="mt-4 text-[clamp(40px,3vw,64px)] font-extrabold leading-[1.1] tracking-tight" style={rv(active, 140)}>{highlight(b.heading)}</h1>
                   <p className="mt-4 max-w-[500px] text-base leading-relaxed text-navy/75" style={rv(active, 300)}>{b.subheading}</p>
-                  <div className="mt-6 flex flex-wrap gap-3" style={rv(active, 460)}>
+
+                  {/* feature icons (admin se) — buttons se pehle */}
+                  {feats.length > 0 && (
+                    <ul className="mt-6 flex max-w-[520px] items-stretch" style={rv(active, 400)}>
+                      {feats.map((f, i) => (
+                        <li key={i} className={`flex flex-1 flex-col items-center gap-2 px-3 text-center ${i > 0 ? 'border-l border-gold/30' : 'pl-0'}`}>
+                          <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold/10 text-gold ring-1 ring-gold/20 transition-transform duration-500 hover:-translate-y-0.5 hover:bg-gold hover:text-white">
+                            <Icon name={f.icon} size={20} />
+                          </span>
+                          <span className="text-[11px] font-bold leading-tight text-navy">{f.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <div className="mt-6 flex flex-wrap gap-3" style={rv(active, feats.length ? 540 : 460)}>
                     {b.cta_label && <ArrowLink to={b.cta_url ?? '/services'} variant="navy">{b.cta_label}</ArrowLink>}
                     {b.secondary_cta_label && <ArrowLink to={b.secondary_cta_url ?? '/projects'} variant="outline">{b.secondary_cta_label}</ArrowLink>}
                   </div>
