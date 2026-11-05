@@ -33,10 +33,10 @@ export const TeamAdmin = () => (
 )
 
 export const PagesAdmin = () => (
-  <SimpleCrud<{ id: number; slug: string; title: string; content: string; is_published: boolean; seo: Record<string, unknown> }> resource="pages" title="Pages" singular="Page" description="Manage legal and informational page content (Privacy Policy, Terms & Conditions)." slugFrom="title"
+  <SimpleCrud<{ id: number; slug: string; title: string; content: string; is_published: boolean; seo: Record<string, unknown> }> resource="pages" title="Pages" singular="Page" description="Manage legal and informational page content (Privacy Policy, Terms & Conditions). HTML supported, with live preview and ready-made templates." slugFrom="title"
     blank={{ title: '', slug: '', content: '', is_published: true, seo: {} }}
     columns={[{ label: 'Title', render: (r) => <span className="font-medium text-navy">{r.title}</span> }, { label: 'URL', render: (r) => `/${r.slug}` }, { label: 'Status', render: (r) => yesNo(r.is_published) }]}
-    fields={[{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'content', label: 'Content (plain text; blank lines separate paragraphs)', type: 'textarea', rows: 12 }, { name: 'is_published', label: 'Published', type: 'checkbox' }, ...seoFields]} />
+    fields={[{ name: 'title', label: 'Title', type: 'text', required: true }, { name: 'slug', label: 'Slug', type: 'text', required: true }, { name: 'content', label: 'Page Content (HTML)', type: 'html', full: true, rows: 16 }, { name: 'is_published', label: 'Published', type: 'checkbox' }, ...seoFields]} />
 )
 
 export const BannersAdmin = () => (

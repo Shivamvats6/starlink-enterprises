@@ -13,21 +13,32 @@ import { ICON_NAMES } from '@/utils/icons'
 import { cx, slugify } from '@/utils/format'
 import type { Project } from '@/types'
 
+// Optional string: DB se null aaye ya field khali ho, dono chalega (pehle null pe red error aata tha)
+const optStr = z.string().nullish()
+
 const schema = z.object({
   title: z.string().trim().min(2, 'Title is required'),
   slug: z.string().trim().min(1, 'Slug is required').regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Lowercase letters, numbers and hyphens only'),
   short_description: z.string().trim().min(1, 'Short description is required').max(300, 'Maximum 300 characters'),
-  category_id: z.coerce.number().nullable().optional(),
-  client_name: z.string().optional(), location: z.string().trim().min(1, 'Location is required'),
-  project_type: z.string().optional(), area: z.string().optional(), area_unit: z.string().optional(), duration: z.string().optional(), completion_year: z.string().optional(),
-  video_url: z.string().url('Enter a valid URL').optional().or(z.literal('')),
-  cover_image: z.string().optional(),
-  gallery: z.array(z.object({ id: z.union([z.string(), z.number()]), url: z.string(), alt: z.string() })),
+  // select ki empty value "" ko 0 nahi, null banana hai
+  category_id: z.preprocess((v) => (v === '' || v == null ? null : Number(v)), z.number().nullable()),
+  client_name: optStr, location: z.string().trim().min(1, 'Location is required'),
+  project_type: optStr, area: optStr, area_unit: optStr, duration: optStr, completion_year: optStr,
+  video_url: z.string().url('Enter a valid URL').nullish().or(z.literal('')),
+  cover_image: optStr,
+  gallery: z.array(z.object({ id: z.union([z.string(), z.number()]), url: z.string(), alt: optStr })),
   highlights: z.array(z.string()),
-  about_heading: z.string().optional(), about_description: z.string().optional(), objectives: z.string().optional(), design_approach: z.string().optional(), execution_details: z.string().optional(),
-  scope: z.array(z.object({ id: z.union([z.string(), z.number()]), title: z.string().min(1, 'Title required'), description: z.string(), icon: z.string() })),
-  results: z.array(z.object({ id: z.union([z.string(), z.number()]), value: z.string().min(1, 'Value required'), title: z.string().min(1, 'Title required'), description: z.string().optional(), icon: z.string() })),
-  seo: z.object({ meta_title: z.string().max(70, 'Max 70 characters').optional(), meta_description: z.string().max(170, 'Max 170 characters').optional(), focus_keyword: z.string().optional(), canonical_url: z.string().url('Enter a valid URL').optional().or(z.literal('')), og_image: z.string().optional(), noindex: z.boolean().optional() }),
+  about_heading: optStr, about_description: optStr, objectives: optStr, design_approach: optStr, execution_details: optStr,
+  scope: z.array(z.object({ id: z.union([z.string(), z.number()]), title: z.string().min(1, 'Title required'), description: optStr, icon: z.string() })),
+  results: z.array(z.object({ id: z.union([z.string(), z.number()]), value: z.string().min(1, 'Value required'), title: z.string().min(1, 'Title required'), description: optStr, icon: z.string() })),
+  seo: z.object({
+    meta_title: z.string().max(70, 'Max 70 characters').nullish(),
+    meta_description: z.string().max(170, 'Max 170 characters').nullish(),
+    focus_keyword: optStr,
+    canonical_url: z.string().url('Enter a valid URL').nullish().or(z.literal('')),
+    og_image: optStr,
+    noindex: z.boolean().nullish(),
+  }).nullish(),
   status: z.enum(['draft', 'published', 'archived']),
   is_featured: z.boolean(),
   published_at: z.string().nullable().optional(),
@@ -42,6 +53,12 @@ const EMPTY: FormValues = {
 }
 const TAB_FIELDS: Record<number, string[]> = { 0: ['title', 'slug', 'short_description', 'category_id', 'location', 'client_name', 'project_type', 'area', 'duration', 'completion_year'], 1: ['cover_image', 'gallery', 'video_url'], 2: ['about_heading', 'about_description'], 3: ['scope'], 4: ['results'], 5: ['seo'], 6: ['status'] }
 
+// null/undefined -> '' (recursively) taaki edit form mein optional fields pe type error na aaye
+const nn = <T,>(o: T): T =>
+  Array.isArray(o) ? (o.map(nn) as unknown as T)
+  : o && typeof o === 'object' ? (Object.fromEntries(Object.entries(o as Record<string, unknown>).map(([k, v]) => [k, nn(v)])) as T)
+  : ((o ?? '') as T)
+
 function IconSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return <select aria-label="Icon" value={value} onChange={(e) => onChange(e.target.value)} className="field !w-auto">{ICON_NAMES.map((n) => <option key={n}>{n}</option>)}</select>
 }
@@ -55,12 +72,31 @@ export default function ProjectForm() {
   const [slugTouched, setSlugTouched] = useState(false)
   const { data: cats } = useAsync(adminCategories.all)
   const { data: existing, loading, error } = useAsync<Project | null>(() => (isNew ? Promise.resolve(null) : adminProjects.get(id!)), [id])
-  const { register, control, handleSubmit, reset, setValue, setError, watch, formState: { errors, isSubmitting, isDirty } } = useForm<FormValues>({ resolver: zodResolver(schema) as never, defaultValues: EMPTY })
+  const { register, control, handleSubmit, reset, setValue, setError, watch, formState: { errors, isSubmitting, isDirty } } = useForm<FormValues>({
+    resolver: zodResolver(schema) as never,
+    defaultValues: EMPTY,
+    mode: 'onSubmit',
+    reValidateMode: 'onSubmit',
+  })
   const scope = useFieldArray({ control, name: 'scope' })
   const results = useFieldArray({ control, name: 'results' })
   const title = watch('title'); const gallery = watch('gallery'); const highlights = watch('highlights'); const shortDesc = watch('short_description') ?? ''
 
-  useEffect(() => { if (existing) { reset({ ...EMPTY, ...existing, seo: { noindex: false, ...existing.seo } } as FormValues); setSlugTouched(true) } }, [existing, reset])
+  useEffect(() => {
+    if (existing) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { published_at, category_id, seo, is_featured, ...rest } = existing as any
+      reset({
+        ...EMPTY,
+        ...nn(rest),
+        category_id: category_id ?? null,
+        published_at: published_at ?? null,
+        is_featured: Boolean(is_featured),
+        seo: { ...nn(seo ?? {}), noindex: Boolean(seo?.noindex) },
+      } as FormValues)
+      setSlugTouched(true)
+    }
+  }, [existing, reset])
   useEffect(() => { if (isNew && !slugTouched) setValue('slug', slugify(title ?? ''), { shouldDirty: false }) }, [title, isNew, slugTouched, setValue])
   useEffect(() => { const h = (e: BeforeUnloadEvent) => { if (isDirty) e.preventDefault() }; window.addEventListener('beforeunload', h); return () => window.removeEventListener('beforeunload', h) }, [isDirty])
 
@@ -107,7 +143,7 @@ export default function ProjectForm() {
           <FormField label="Project Title" required error={errors.title?.message}><input className="field" {...register('title')} /></FormField>
           <FormField label="Project Slug" required error={errors.slug?.message} hint="Used in the URL: /projects/your-slug"><input className="field" {...register('slug', { onChange: () => setSlugTouched(true) })} /></FormField>
           <FormField className="sm:col-span-2" label="Short Description" required error={errors.short_description?.message} hint={`${shortDesc.length}/300`}><textarea rows={3} className="field" {...register('short_description')} /></FormField>
-          <FormField label="Category"><select className="field" {...register('category_id')}><option value="">Select category</option>{cats?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></FormField>
+          <FormField label="Category" error={errors.category_id?.message as string | undefined}><select className="field" {...register('category_id')}><option value="">Select category</option>{cats?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></FormField>
           <FormField label="Client Name"><input className="field" {...register('client_name')} /></FormField>
           <FormField label="Project Location" required error={errors.location?.message}><input className="field" {...register('location')} /></FormField>
           <FormField label="Project Type"><input className="field" {...register('project_type')} /></FormField>
@@ -126,8 +162,8 @@ export default function ProjectForm() {
           </div>
           <div><p className="mb-2 text-xs font-semibold text-navy">Project Gallery <span className="font-normal text-muted">({gallery.length} images)</span></p>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{gallery.map((g, i) => (
-              <li key={`${g.id}-${i}`} className="rounded-lg border border-line p-2"><Img src={g.url} alt={g.alt} className="aspect-[3/2] w-full rounded" />
-                <input aria-label="Alt text" placeholder="Alt text (describe the image)" className="field mt-2 !py-1.5 text-xs" value={g.alt} onChange={(e) => { const n = [...gallery]; n[i] = { ...g, alt: e.target.value }; setValue('gallery', n, { shouldDirty: true }) }} />
+              <li key={`${g.id}-${i}`} className="rounded-lg border border-line p-2"><Img src={g.url} alt={g.alt ?? ''} className="aspect-[3/2] w-full rounded" />
+                <input aria-label="Alt text" placeholder="Alt text (describe the image)" className="field mt-2 !py-1.5 text-xs" value={g.alt ?? ''} onChange={(e) => { const n = [...gallery]; n[i] = { ...g, alt: e.target.value }; setValue('gallery', n, { shouldDirty: true }) }} />
                 <div className="mt-2 flex gap-1"><button type="button" aria-label="Move up" onClick={() => move(i, -1)} className="grid h-8 w-8 place-items-center rounded border border-line"><ArrowUp size={14} /></button><button type="button" aria-label="Move down" onClick={() => move(i, 1)} className="grid h-8 w-8 place-items-center rounded border border-line"><ArrowDown size={14} /></button>
                   <button type="button" aria-label="Remove image" onClick={() => setValue('gallery', gallery.filter((_, k) => k !== i), { shouldDirty: true })} className="ml-auto grid h-8 w-8 place-items-center rounded border border-danger/30 text-danger"><X size={14} /></button></div></li>))}
               <li><label className="grid h-full min-h-[140px] cursor-pointer place-items-center rounded-lg border-2 border-dashed border-line text-center text-xs text-muted hover:border-gold"><span><Upload className="mx-auto mb-1" size={20} />Add Images<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" className="hidden" onChange={(e) => { addImages(e.target.files); e.target.value = '' }} /></span></label></li></ul>

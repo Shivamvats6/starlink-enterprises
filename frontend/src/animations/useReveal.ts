@@ -23,6 +23,8 @@ export function useReveal(ref: RefObject<HTMLElement>, deps: unknown[] = []) {
     if (!root || prefersReducedMotion()) return
     let ctx: Cleanup | undefined
     let cancelled = false
+    let ro: ResizeObserver | undefined
+    let stopRefresh: (() => void) | undefined
     const splits: { revert: () => void }[] = []
 
     Promise.all([loadGsap(), fontsReady()]).then(([{ gsap, ScrollTrigger, SplitText }]) => {
@@ -88,9 +90,27 @@ export function useReveal(ref: RefObject<HTMLElement>, deps: unknown[] = []) {
         })
         ScrollTrigger.refresh()
       }, root)
+
+      // Layout badalne (images load/hide, async data aane) par trigger positions dobara calculate karo,
+      // warna neeche ke sections opacity:0 pe atke reh jaate hain.
+      let t: ReturnType<typeof setTimeout>
+      const refresh = () => { clearTimeout(t); t = setTimeout(() => ScrollTrigger.refresh(), 120) }
+      if (typeof ResizeObserver !== 'undefined') {
+        ro = new ResizeObserver(refresh)
+        ro.observe(root)
+      }
+      window.addEventListener('load', refresh)
+      stopRefresh = () => { clearTimeout(t); window.removeEventListener('load', refresh) }
+      refresh()
     }).catch(() => {})
 
-    return () => { cancelled = true; splits.forEach((s) => s.revert()); ctx?.revert() }
+    return () => {
+      cancelled = true
+      ro?.disconnect()
+      stopRefresh?.()
+      splits.forEach((s) => s.revert())
+      ctx?.revert()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 }

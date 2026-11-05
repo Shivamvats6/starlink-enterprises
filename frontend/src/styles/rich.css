@@ -1,0 +1,64 @@
+/* Styled HTML content (privacy policy, terms, any CMS page).
+   Admin jo HTML likhega wo isi design mein dikhega.
+   Tags: <h2> <h3> <p> <ul> <ol> <blockquote> <table> <a> <hr>
+   Classes: .lead  .callout  .info-grid > .info-card  ul.chips */
+.rich { color: #3b4658; font-size: 1.0625rem; line-height: 1.8; overflow-wrap: anywhere; }
+.rich > *:first-child { margin-top: 0; }
+.rich > *:last-child { margin-bottom: 0; }
+
+.rich h2 { position: relative; scroll-margin-top: 7rem; margin: 2.75rem 0 1.1rem; padding-bottom: .7rem; border-bottom: 1px solid #e6e9ef; color: #0b1f3b; font-size: 1.6rem; font-weight: 800; line-height: 1.25; }
+.rich h2::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 56px; height: 3px; border-radius: 2px; background: #c5933d; }
+.rich h3 { scroll-margin-top: 7rem; margin: 2rem 0 .75rem; color: #0b1f3b; font-size: 1.2rem; font-weight: 700; line-height: 1.35; }
+.rich h4 { margin: 1.5rem 0 .5rem; color: #0b1f3b; font-size: 1.05rem; font-weight: 700; }
+
+.rich p { margin: 0 0 1.15rem; }
+.rich .lead { color: #0b1f3b; font-size: 1.2rem; font-weight: 500; line-height: 1.7; }
+.rich strong, .rich b { color: #0b1f3b; font-weight: 700; }
+.rich a { color: #9a6f22; font-weight: 600; text-decoration: underline; text-decoration-color: rgba(197,147,61,.5); text-underline-offset: 3px; transition: color .2s; }
+.rich a:hover { color: #c5933d; }
+
+.rich ul, .rich ol { margin: 0 0 1.3rem; padding: 0; list-style: none; }
+.rich ul > li { position: relative; margin: .5rem 0; padding-left: 1.75rem; }
+.rich ul > li::before { content: ''; position: absolute; left: .25rem; top: .72em; width: .5rem; height: .5rem; border-radius: 999px; background: #c5933d; }
+.rich ol { counter-reset: rich-li; }
+.rich ol > li { position: relative; counter-increment: rich-li; margin: .65rem 0; padding-left: 2.4rem; }
+.rich ol > li::before { content: counter(rich-li); position: absolute; left: 0; top: .2em; display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 999px; background: rgba(197,147,61,.15); color: #9a6f22; font-size: .78rem; font-weight: 700; }
+.rich li > ul, .rich li > ol { margin: .5rem 0 0; }
+
+.rich blockquote { margin: 1.75rem 0; padding: 1.1rem 1.4rem; border-left: 4px solid #c5933d; border-radius: 0 14px 14px 0; background: #faf6ee; color: #0b1f3b; font-style: italic; }
+.rich blockquote p:last-child { margin-bottom: 0; }
+
+/* <div class="callout"><strong>Title</strong><p>Text</p></div>  ->  highlighted note box */
+.rich .callout { margin: 1.75rem 0; padding: 1.15rem 1.4rem; border: 1px solid rgba(197,147,61,.35); border-radius: 16px; background: linear-gradient(135deg, #fbf6ea, #fff); }
+.rich .callout > *:last-child { margin-bottom: 0; }
+.rich .callout strong:first-child { display: block; margin-bottom: .25rem; color: #9a6f22; letter-spacing: .02em; }
+
+/* <div class="info-grid"><div class="info-card"><h4>Title</h4><ul>...</ul></div> ... </div>  ->  premium cards */
+.rich .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin: 1.5rem 0 1.75rem; }
+.rich .info-card { position: relative; overflow: hidden; padding: 1.4rem 1.3rem 1.2rem; border: 1px solid #e6e9ef; border-radius: 20px; background: #fff; box-shadow: 0 10px 30px -18px rgba(11,31,59,.35); transition: transform .3s, border-color .3s; }
+.rich .info-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 3px; background: linear-gradient(90deg, #c5933d, #e2bb71); }
+.rich .info-card:hover { transform: translateY(-3px); border-color: rgba(197,147,61,.5); }
+.rich .info-card h4 { margin: 0 0 .75rem; color: #0b1f3b; font-size: 1.05rem; }
+.rich .info-card ul { margin: 0; }
+.rich .info-card li { margin: .35rem 0; font-size: .95rem; line-height: 1.6; }
+.rich .info-card p:last-child { margin-bottom: 0; }
+
+/* <ul class="chips"> ... </ul>  ->  pill tags */
+.rich ul.chips { display: flex; flex-wrap: wrap; gap: .6rem; }
+.rich ul.chips > li { margin: 0; padding: .5rem 1.05rem; border: 1px solid rgba(197,147,61,.4); border-radius: 999px; background: #faf6ee; color: #0b1f3b; font-size: .92rem; font-weight: 600; line-height: 1.4; }
+.rich ul.chips > li::before { display: none; }
+
+.rich hr { margin: 2.5rem 0; border: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(197,147,61,.6), transparent); }
+.rich code { padding: .15em .45em; border-radius: 6px; background: #eef1f6; color: #0b1f3b; font-size: .9em; }
+.rich img { max-width: 100%; height: auto; margin: 1.5rem 0; border-radius: 16px; }
+
+.rich table { display: block; width: 100%; max-width: 100%; margin: 1.75rem 0; overflow-x: auto; border-collapse: separate; border-spacing: 0; border: 1px solid #e6e9ef; border-radius: 14px; font-size: .95rem; }
+.rich th { padding: .8rem 1rem; background: #0b1f3b; color: #fff; font-weight: 600; text-align: left; white-space: nowrap; }
+.rich td { padding: .8rem 1rem; border-top: 1px solid #e6e9ef; vertical-align: top; }
+.rich tbody tr:nth-child(even) td { background: #fafbfd; }
+
+@media (max-width: 640px) {
+  .rich { font-size: 1rem; }
+  .rich h2 { font-size: 1.35rem; }
+  .rich .lead { font-size: 1.1rem; }
+}

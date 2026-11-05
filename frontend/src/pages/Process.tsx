@@ -82,11 +82,15 @@ export default function Process() {
   const { settings: s } = useSettings()
   const ref = useRef<HTMLDivElement>(null)
   useSeo({ title: 'Our Process', description: 'From understanding requirements to handover and support — our structured execution workflow.' })
-  useHeroIntro(ref); useReveal(ref)
 
   const steps = [...s.process]
   const n = steps.length
   const deliverables = steps.reduce((t, st) => t + (st.deliverables?.length ?? 0), 0)
+
+  // deps: jab process steps (settings se async) aate/badalte hain tab animations dobara set hon,
+  // warna timeline cards, Promise aur FAQ opacity:0 pe atke reh jaate hain.
+  useHeroIntro(ref)
+  useReveal(ref, [n, deliverables])
 
   const listRef = useRef<HTMLOListElement>(null)
   const fillRef = useRef<HTMLSpanElement>(null)
